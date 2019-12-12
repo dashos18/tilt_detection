@@ -11,17 +11,15 @@ class Opora_incline:
     def process(self,path_to_image,line_thickness=5):
 
         self.path_to_image=path_to_image
-        self.mask_preproceesing(path_to_image)
         self.process_lines(path_to_image)
-        for x in self.two_lines:
+        self.mask_preproceesing(path_to_image)
+        for x in self.merge_lines_all:
             cv2.line(self.img, (x[0][0], x[0][1]), (x[1][0], x[1][1]), (0, 0, 255), line_thickness)
 
         outpath='/Users/dariavolkova/Desktop/pred'
         image_name = os.path.split(self.path_to_image)[-1]
 
         cv2.imwrite(os.path.join(outpath, image_name), self.img)
-
-
 
     def mask_preproceesing(self, image):
         self.img=cv2.imread(image)
@@ -30,7 +28,7 @@ class Opora_incline:
         fgdModel = np.zeros((1, 65), np.float64)
 
         rect = (20, 0, self.img.shape[1] - 20, self.img.shape[0])  # (start_x, start_y, width, height).
-        cv2.grabCut(self.img, mask, rect, bgdModel, fgdModel, 10, cv2.GC_INIT_WITH_RECT)
+        cv2.grabCut(self.img, mask, rect, bgdModel, fgdModel, 15, cv2.GC_INIT_WITH_RECT)
         mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
         img = self.img * mask2[:, :, np.newaxis]
         ret, thresh1 = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
@@ -99,7 +97,7 @@ class Opora_incline:
         merged_lines_all = []
         merged_lines_all.extend(merged_lines_x)
         merged_lines_all.extend(merged_lines_y)
-        print("process groups lines", len(_lines), 'All important lines',len(merged_lines_all))
+        print("process groups lines", len(_lines), len(merged_lines_all))
 
         # merged_lines_all.sort(key=lambda x: x[1])
         # new_something = []
@@ -110,34 +108,20 @@ class Opora_incline:
         #     else:
         #         merged_lines_all.extend(new_something)
 
-        #img_merged_lines = img
-        #for line in merged_lines_all:
-            #cv2.line(img_merged_lines, (line[0][0], line[0][1]), (line[1][0], line[1][1]), (0, 0, 255), 6)
+        img_merged_lines = img
+        for line in merged_lines_all:
+            cv2.line(img_merged_lines, (line[0][0], line[0][1]), (line[1][0], line[1][1]), (0, 0, 255), 6)
             #cv2.imwrite('/Users/dariavolkova/Desktop/pred/lines_lines.jpg', img)
 
-        #self.merge_lines_all=merged_lines_all
+        self.merge_lines_all=merged_lines_all
 
-        two_lines = []
-        dop_line = [(int(img.shape[1] / 2), 0), (int(img.shape[1] / 2),img.shape[0])]
-        for line in merged_lines_all:
-            if line[0][0] <= dop_line[0][0]:
-                two_lines.append(line)
-                break
-        for line in merged_lines_all:
-            if line[0][0] > dop_line[0][0]:
-                two_lines.append(line)
-                break
-
-        self.two_lines = two_lines
-        print('This is two main lines',self.two_lines)
-
-        return two_lines
+        return merged_lines_all
 
     def merge_lines_pipeline_2(self,lines):
         super_lines_final = []
         super_lines = []
         min_distance_to_merge = 30 #was 30
-        min_angle_to_merge = 30 #was 30
+        min_angle_to_merge = 40 #was 30
 
         #check if line have angle and enough distance to be similar
 
