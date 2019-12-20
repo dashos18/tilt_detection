@@ -19,9 +19,25 @@ class Opora_incline:
         outpath='/Users/dariavolkova/Desktop/pred'
         image_name = os.path.split(self.path_to_image)[-1]
 
+        self.angle_calculation()
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        bottomLeftCornerOfText = (int(self.img.shape[1]/2),int(self.img.shape[0]-10))
+        fontScale = 1
+        fontColor = (255, 255, 255)
+        lineType = 3
+
+        calculated_angel=str(self.overall_angle)
+
+        cv2.putText(self.img, calculated_angel,
+                    bottomLeftCornerOfText,
+                    font,
+                    fontScale,
+                    fontColor,
+                    lineType)
+
         cv2.imwrite(os.path.join(outpath, image_name), self.img)
 
-        self.angle_calculation()
 
 
     def mask_preproceesing(self, image):
@@ -38,6 +54,7 @@ class Opora_incline:
         #cv2.imwrite('/Users/dariavolkova/Desktop/pred/lines_lines.jpg', thresh1)
 
         return thresh1
+
 
     def get_lines(self,lines_in):
         if cv2.__version__ < '3.0':
@@ -136,27 +153,38 @@ class Opora_incline:
 
     def angle_calculation(self):
 
-        #angle one calculation
-        x1_1 = self.two_lines[0][0][0]
-        y1_1 = self.two_lines[0][0][1]
-        x2_1 = self.two_lines[0][1][0]
-        y2_1 = self.two_lines[0][1][1]
-        angle_1 = np.rad2deg(np.arctan2(abs(y2_1 - y1_1), abs(x2_1 - x1_1)))
+        if len(self.two_lines)<2:
+            x1_1 = self.two_lines[0][0][0]
+            y1_1 = self.two_lines[0][0][1]
+            x2_1 = self.two_lines[0][1][0]
+            y2_1 = self.two_lines[0][1][1]
+            angle_1 = round(90-np.rad2deg(np.arctan2(abs(y2_1 - y1_1), abs(x2_1 - x1_1))),2)
 
-        #angle two calculation
-        x1_2 = self.two_lines[1][0][0]
-        y1_2 = self.two_lines[1][0][1]
-        x2_2 = self.two_lines[1][1][0]
-        y2_2 = self.two_lines[1][1][1]
-        angle_2 = np.rad2deg(np.arctan2(abs(y2_2 - y1_2), abs(x2_2 - x1_2)))
+            self.overall_angle = angle_1
 
-        overall_angle = (angle_1 + angle_2) / 2
+        else:
+            #angle one calculation
+            x1_1 = self.two_lines[0][0][0]
+            y1_1 = self.two_lines[0][0][1]
+            x2_1 = self.two_lines[0][1][0]
+            y2_1 = self.two_lines[0][1][1]
+            angle_1 = np.rad2deg(np.arctan2(abs(y2_1 - y1_1), abs(x2_1 - x1_1)))
 
-        self.overall_angle=overall_angle
 
-        print('This is your angle', self.overall_angle)
+            #angle two calculation
+            x1_2 = self.two_lines[1][0][0]
+            y1_2 = self.two_lines[1][0][1]
+            x2_2 = self.two_lines[1][1][0]
+            y2_2 = self.two_lines[1][1][1]
+            angle_2 = np.rad2deg(np.arctan2(abs(y2_2 - y1_2), abs(x2_2 - x1_2)))
 
-        return overall_angle
+            overall_angle = round(90-(angle_1 + angle_2) / 2,2)
+
+            self.overall_angle=overall_angle
+
+            print('This is your angle', self.overall_angle)
+
+            return overall_angle
 
     def merge_lines_pipeline_2(self,lines):
         super_lines_final = []
@@ -307,7 +335,7 @@ class Opora_incline:
 
 
 
-basepath='/Users/dariavolkova/Desktop/dataset_opora'
+basepath='/Users/dariavolkova/Desktop/z'
 processer=Opora_incline()
 
 for image in os.listdir(basepath):
