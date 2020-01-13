@@ -14,16 +14,14 @@ class Opora_incline:
         print(self.path_to_image)
         self.mask_preproceesing(path_to_image)
         self.process_lines(path_to_image)
-        for x in self.final_lines:
-            cv2.line(self.img, (x[0][0], x[0][1]), (x[1][0], x[1][1]), (0, 0, 255), line_thickness)
+        #for x in self.final_lines:
+            #cv2.line(self.img, (x[0][0], x[0][1]), (x[1][0], x[1][1]), (0, 0, 255), line_thickness)
 
-        outpath='/Users/dariavolkova/Desktop/untitled folder'
+        outpath='/Users/dariavolkova/Desktop/lab_future/0_DEFECTS_DETECTION/new_3_not_cut'
         image_name = os.path.split(self.path_to_image)[-1]
 
-
         cv2.imwrite(os.path.join(outpath, image_name), self.img)
-
-
+        self.pill_extract()
 
 
     def mask_preproceesing(self, image):
@@ -155,15 +153,36 @@ class Opora_incline:
 
 
         final_lines = []
-        final_lines.append([[x1, 0]] + [[x1_1, img.shape[0]]])
-        final_lines.append([[x2, 0]] + [[x2_2, img.shape[0]]])
-
-        #print('This is all lines', final_lines)
+        # final_lines.append([[x1, 0]] + [[x1_1, img.shape[0]]])
+        # final_lines.append([[x2, 0]] + [[x2_2, img.shape[0]]])
+        final_lines.append([x1, 0])
+        final_lines.append([x1_1, img.shape[0]])
+        final_lines.append([x2, 0])
+        final_lines.append([x2_2, img.shape[0]])
 
         self.final_lines=final_lines
-        #print(self.final_lines)
+        print('THIS IS TWO FINAL LINES',self.final_lines)
 
         return final_lines
+
+    def pill_extract(self):
+        border_lines=self.final_lines
+        last_point=[self.final_lines[2]]
+        print(last_point)
+        pts=np.array(border_lines+last_point)
+        print('This is new coordinate',pts)
+        mask = np.zeros((self.img.shape[0], self.img.shape[1]))
+        cv2.fillConvexPoly(mask, pts, 1)
+        mask = mask.astype(np.bool)
+        out = np.zeros_like(self.img)
+        out[mask] = self.img[mask]
+
+        outpath = '/Users/dariavolkova/Desktop/kk'
+        image_name = os.path.split(self.path_to_image)[-1]
+        cv2.imwrite(os.path.join(outpath, image_name), out)
+
+        #array of only pillar
+        return out[mask]
 
     def merge_lines_pipeline_2(self,lines):
         super_lines_final = []
@@ -314,7 +333,7 @@ class Opora_incline:
 
 
 
-basepath='/Users/dariavolkova/Desktop/dataset_2'
+basepath='/Users/dariavolkova/Desktop/lab_future/0_DEFECTS_DETECTION/dataset_opora'
 processer=Opora_incline()
 
 for image in os.listdir(basepath):
@@ -322,5 +341,6 @@ for image in os.listdir(basepath):
     if not any((image.endswith(ext) for ext in [".png", "jpg"])):
         continue
     testing=processer.process(os.path.join(basepath,image))
+
 
 
