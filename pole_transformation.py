@@ -7,26 +7,19 @@ import cv2
 
 class PoleTransformation():
 
-    def __init__(self,
-                 image_path,
-                 line_coordinates):
+    def mask_detect(image, line_coordinates):
 
-        self.image_path = image_path
-        self.line_coordinates = line_coordinates
-        self.image = cv2.imread(self.image_path)
-
-    def mask_detect(self):
-
-        contours = np.array(self.line_coordinates)
-        mask = np.zeros(self.image .shape, dtype=np.uint8)
+        img=cv2.imread(image)
+        contours = np.array(line_coordinates)
+        mask = np.zeros(img.shape, dtype=np.uint8)
         cv2.fillPoly(mask, pts=[contours], color=(255, 255, 255))
-        masked_image = cv2.bitwise_and(self.image, mask)
+        masked_image = cv2.bitwise_and(img, mask)
 
         return masked_image
 
-    def wrap_prespective(self):
+    def wrap_prespective(self,image,points):
         #unpack each point that we get
-        points = np.array(self.line_coordinates ,dtype='float32')
+
         (tl, tr, br, bl) = points
 
         # maximum distance between bottom-right and bottom-left
@@ -55,20 +48,23 @@ class PoleTransformation():
             [0, maxHeight - 1]], dtype="float32")
 
         M = cv2.getPerspectiveTransform(points, dst)
-        warped = cv2.warpPerspective(self.image, M, (maxWidth, maxHeight))
+        warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
 
         return warped
 
-    def resize(self,width = 224,height = 1120,):
+    def resize_for_nn(self,image_path,line_coordinates,width = 224,height = 1120):
+        img=cv2.imread(image_path)
+        points = np.array(line_coordinates, dtype='float32')
         dim = (width,height)
-        resized = cv2.resize(self.wrap_prespective(), dim, interpolation = cv2.INTER_AREA)
-        #cv2.imwrite('/Users/dariavolkova/Desktop/looooooool.png',resized)
-        return resized
+        resized = cv2.resize(self.wrap_prespective(img,points), dim, interpolation = cv2.INTER_AREA)
+        cv2.imwrite('/Users/dariavolkova/Desktop/looooooool.png',resized)
+        return cv2.imwrite('/Users/dariavolkova/Desktop/hooooskdokcp.png',resized)
 
 
-tester=PoleTransformation('/Users/dariavolkova/Desktop/lol_4.png',[[55, 0],[251,0],[280,1442],[80,1442]])
+tester=PoleTransformation()
 
-tester.resize()
+tester.resize_for_nn('/Users/dariavolkova/Desktop/lol_4.png',[[55, 0],[251,0],[280,1442],[80,1442]])
+
 
 
 
