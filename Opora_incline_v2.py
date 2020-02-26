@@ -16,10 +16,11 @@ class Opora_incline:
         for x in self.two_lines:
             cv2.line(self.img, (x[0][0], x[0][1]), (x[1][0], x[1][1]), (0, 0, 255), line_thickness)
 
-        outpath='/Users/dariavolkova/Desktop/pred'
+        outpath='/Users/dariavolkova/Desktop/lab_future/0_DEFECTS_DETECTION/lol_2'
         image_name = os.path.split(self.path_to_image)[-1]
 
-        self.angle_calculation()
+        #fself.angle_calculation()
+        self.angle_calculation_another_way()
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (int(self.img.shape[1]/2),int(self.img.shape[0]-10))
@@ -147,6 +148,15 @@ class Opora_incline:
                 break
 
         self.two_lines = two_lines
+        print(self.two_lines)
+        #add this to draw on image
+        #new_1 = [[self.two_lines [0]] + [self.two_lines [1]]]
+        #new_2=[[self.two_lines [2]]+[self.two_lines [3]]]
+
+        #new_two_lines=new_1+new_2
+
+        #self.new_two_lines=new_two_lines
+
         print('This is two main lines',self.two_lines)
 
         return two_lines
@@ -169,6 +179,7 @@ class Opora_incline:
             x2_1 = self.two_lines[0][1][0]
             y2_1 = self.two_lines[0][1][1]
             angle_1 = np.rad2deg(np.arctan2(abs(y2_1 - y1_1), abs(x2_1 - x1_1)))
+            print('This is angle_1 coordinate',x1_1,y1_1,x2_1,y2_1)
 
 
             #angle two calculation
@@ -185,6 +196,62 @@ class Opora_incline:
             print('This is your angle', self.overall_angle)
 
             return overall_angle
+
+
+    def angle_calculation_another_way(self):
+
+        if len(self.two_lines)<2:
+            x1_1 = self.two_lines[0][0][0]
+            y1_1 = self.two_lines[0][0][1]
+            x2_1 = self.two_lines[0][1][0]
+            y2_1 = self.two_lines[0][1][1]
+            angle_1 = round(90-np.rad2deg(np.arctan2(abs(y2_1 - y1_1), abs(x2_1 - x1_1))),2)
+
+            self.overall_angle = angle_1
+
+        else:
+            #angle one calculation
+            x1_1 = self.two_lines[0][0][0]
+            y1_1 = self.two_lines[0][0][1]
+            x2_1 = self.two_lines[0][1][0]
+            y2_1 = self.two_lines[0][1][1]
+            delta_y=(abs(y2_1-y1_1))
+            print('This is delta y',delta_y)
+            delta_x=(abs(x2_1-x1_1))
+            print('This is delta x',delta_x)
+            if delta_x==0:
+                z=1
+                slope=(delta_y/z)
+            else:
+                slope = (delta_y / delta_x)
+            angle_J = math.atan(slope) * 180 / math.pi
+            #print('This is angle_1 coordinate',x1_1,y1_1,x2_1,y2_1)
+
+
+            #angle two calculation
+            x1_2 = self.two_lines[1][0][0]
+            y1_2 = self.two_lines[1][0][1]
+            x2_2 = self.two_lines[1][1][0]
+            y2_2 = self.two_lines[1][1][1]
+            delta_y_2 = (abs(y2_1 - y1_1))
+            delta_x_2 = (abs(x2_1 - x1_1))
+            if delta_x_2==0:
+                y=1
+                slope_2 = (delta_y_2 /y)
+            else:
+                slope_2 = (delta_y_2 / delta_x_2)
+
+            angle_P = math.atan(slope_2) * 180 / math.pi
+
+            #angle_2 = np.rad2deg(np.arctan2(abs(y2_2 - y1_2), abs(x2_2 - x1_2)))
+
+            overall_angle_another = round(90-(angle_J + angle_P) / 2,2)
+
+            self.overall_angle=overall_angle_another
+
+            print('This is your angle', self.overall_angle)
+
+            return overall_angle_another
 
     def merge_lines_pipeline_2(self,lines):
         super_lines_final = []
@@ -335,7 +402,7 @@ class Opora_incline:
 
 
 
-basepath='/Users/dariavolkova/Desktop/z'
+basepath='/Users/dariavolkova/Desktop/lab_future/0_DEFECTS_DETECTION/d_opora'
 processer=Opora_incline()
 
 for image in os.listdir(basepath):
